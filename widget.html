@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="CubeZockii">
+    <meta name="description"
+        content="A dynamic Discord profile widget displaying live user information, including activities and 'About Me' section.">
+
+    <title>Discord Profile Widget</title>
+
+    <link rel="icon" href="https://assets-global.website-files.com/6257adef93867e50d84d30e2/6257d23c14d18d1723f03b92_Discord-Icon-p-500.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Audiowide&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* --- THEME VARIABLES (from theme.css) --- */
+        :root {
+            --bg-primary-dark: #0A0F1A;
+            --bg-secondary-dark: #121826;
+            --bg-tertiary-dark: #1F2937;
+            --bg-card-dark: #161E2D;
+            --bg-loader-dark: #070B12;
+            --bg-sidebar-dark: rgba(18, 24, 38, 0.95);
+            --bg-overlay-dark: rgba(0, 0, 0, 0.7);
+
+            --text-primary-dark: #E5E7EB;
+            --text-secondary-dark: #9CA3AF;
+            --text-headings-dark: #F9FAFB;
+            --text-loader-dark: var(--accent-primary-dark);
+
+            --accent-primary-dark: #8B5CF6;
+            --accent-secondary-dark: #60A5FA;
+            --accent-glow-hero-start-dark: rgba(139, 92, 246, 0.6);
+            --accent-glow-hero-mid-dark: rgba(96, 165, 250, 0.4);
+            --accent-glow-hero-end-dark: rgba(10, 15, 26, 0);
+            --accent-glow-skill-card-dark: rgba(139, 92, 246, 0.5);
+            --accent-glow-project-card-dark: rgba(96, 165, 250, 0.3);
+
+            --border-color-dark: #374151;
+            --shadow-color-dark: rgba(0, 0, 0, 0.6);
+            --icon-color-dark: var(--text-primary-dark);
+
+            --font-primary: 'Orbitron', 'Audiowide', sans-serif;
+            --font-secondary: 'Share Tech Mono', 'Roboto Mono', monospace;
+            --font-mono: 'Roboto Mono', monospace;
+            --font-loader: 'Audiowide', 'Orbitron', sans-serif;
+
+            --transition-speed-fast: 0.15s;
+            --transition-speed-normal: 0.25s;
+            --transition-speed-medium: 0.4s;
+            --transition-speed-slow: 0.6s;
+            --transition-timing: ease-in-out;
+            --transition-timing-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+
+            --spacing-unit: 8px;
+            --header-height: 70px;
+            --max-width-container: 1200px;
+            --border-radius-small: 4px;
+            --border-radius-medium: 8px;
+            --border-radius-large: 12px;
+            --border-radius-card: 10px;
+            --border-radius-button: 8px;
+        }
+
+        /* --- KEYFRAME ANIMATIONS (from animations.css) --- */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- BASE & UTILITY STYLES (from style.css) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary-dark);
+            color: var(--text-primary-dark);
+            font-family: var(--font-secondary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- DISCORD WIDGET STYLES (custom) --- */
+        #discord-widget-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--bg-card-dark);
+            border-radius: var(--border-radius-large);
+            box-shadow: 0 10px 30px var(--shadow-color-dark);
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            transform: translateY(20px);
+        }
+
+        #discord-widget-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .widget-header {
+            position: relative;
+            height: 90px;
+        }
+        
+        .banner {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: linear-gradient(135deg, #6a44aa, #4a74a1);
+        }
+
+        .avatar-container {
+            position: absolute;
+            bottom: -32px;
+            left: 16px;
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background-color: var(--bg-card-dark);
+            border: 6px solid var(--bg-card-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .status-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 6px solid var(--bg-card-dark);
+            background-color: var(--bg-card-dark); /* Fallback */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+        .status-badge i {
+            font-size: 16px;
+            color: #fff;
+        }
+        .status-online { background-color: #3ba55c; }
+        .status-idle { background-color: #faa81a; }
+        .status-dnd { background-color: #ed4245; }
+        .status-offline { background-color: #747f8d; }
+
+        .widget-content {
+            padding: 40px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .user-info {
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+
+        .user-info h2 {
+            font-size: 1.5rem;
+            font-family: var(--font-primary);
+            color: var(--text-headings-dark);
+        }
+
+        .user-info .username {
+            font-size: 1rem;
+            color: var(--text-secondary-dark);
+            margin-top: 4px;
+        }
+
+        .section-header {
+            font-size: 1rem;
+            color: var(--text-secondary-dark);
+            font-family: var(--font-primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .about-me-content {
+            white-space: pre-wrap;
+            line-height: 1.5;
+            color: var(--text-primary-dark);
+        }
+
+        .activities-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .activity-card {
+            background-color: var(--bg-tertiary-dark);
+            border-radius: var(--border-radius-medium);
+            padding: 12px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border: 1px solid var(--border-color-dark);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .activity-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .activity-icon-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .activity-icon {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .activity-details {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .activity-state, .activity-details .small {
+            color: var(--text-secondary-dark);
+            font-size: 0.8rem;
+        }
+        .activity-name {
+            font-weight: bold;
+            color: var(--text-headings-dark);
+        }
+        .activity-state, .activity-details .small {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            text-align: center;
+        }
+        .loader-container .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--accent-primary-dark);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .loader-container .loader-text {
+            margin-top: 16px;
+            color: var(--text-secondary-dark);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Spotify progress bar specific styles */
+        .spotify-progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .spotify-progress-bar {
+            height: 100%;
+            background-color: rgb(255, 255, 255);
+            transition: width 1s linear;
+        }
+
+        .spotify-timestamps {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-secondary-dark);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="discord-widget-container">
+        <div id="loader-overlay" class="loader-container">
+            <div class="spinner"></div>
+            <p class="loader-text">Loading Discord Profile...</p>
+        </div>
+        
+        <div id="widget-content" style="display: none;">
+            <!-- Header Section -->
+            <div class="widget-header">
+                <div class="banner" id="widget-banner"></div>
+                <div class="avatar-container">
+                    <img id="widget-avatar" class="avatar" alt="User Avatar" />
+                    <div id="widget-status" class="status-badge">
+                        <i id="status-icon" class="fas"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="widget-content">
+                <!-- User Info -->
+                <div class="user-info">
+                    <h2 id="widget-username"></h2>
+                    <p id="widget-discriminator" class="username"></p>
+                </div>
+
+                <!-- About Me -->
+                <div id="about-me-section">
+                    <h3 class="section-header">About Me</h3>
+                    <div id="widget-about-me" class="about-me-content"></div>
+                </div>
+
+                <!-- Activities -->
+                <div id="activities-section">
+                    <h3 class="section-header">Active Now</h3>
+                    <div id="activities-container" class="activities-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = "804361392344793119"; // <<< IMPORTANT: REPLACE THIS WITH YOUR USER ID
+
+            const widgetContainer = document.getElementById('discord-widget-container');
+            const loaderOverlay = document.getElementById('loader-overlay');
+            const widgetContent = document.getElementById('widget-content');
+
+            const bannerEl = document.getElementById('widget-banner');
+            const avatarEl = document.getElementById('widget-avatar');
+            const usernameEl = document.getElementById('widget-username');
+            const discriminatorEl = document.getElementById('widget-discriminator');
+            const statusEl = document.getElementById('widget-status');
+            const aboutMeSection = document.getElementById('about-me-section');
+            const aboutMeEl = document.getElementById('widget-about-me');
+            const activitiesSection = document.getElementById('activities-section');
+            const activitiesContainerEl = document.getElementById('activities-container');
+            const statusIconEl = document.getElementById('status-icon');
+
+            let timerInterval = null;
+
+            // Helper function to format milliseconds to a readable time format (e.g., 0:35)
+            const formatTime = (ms) => {
+                const totalSeconds = Math.floor(ms / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            };
+
+            // Function to update Spotify song progress bar and timestamps
+            const updateSpotifyTimers = (startTime, endTime, progressBar, elapsedText, remainingText) => {
+                const now = new Date().getTime();
+                const totalDuration = endTime - startTime;
+                const elapsed = now - startTime;
+                const remaining = endTime - now;
+
+                if (elapsed >= totalDuration) {
+                    progressBar.style.width = '100%';
+                    elapsedText.textContent = formatTime(totalDuration);
+                    remainingText.textContent = formatTime(0);
+                    return; // Stop timer when song ends
+                }
+
+                const progressPercentage = (elapsed / totalDuration) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+                elapsedText.textContent = formatTime(elapsed);
+                remainingText.textContent = `-${formatTime(remaining > 0 ? remaining : 0)}`;
+            };
+
+            // Main function to fetch and render Discord data
+            const fetchDiscordData = async () => {
+                try {
+                    const response = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
+                    const data = await response.json();
+
+                    if (data.success && data.data) {
+                        const user = data.data.discord_user;
+                        const activities = data.data.activities;
+                        const status = data.data.discord_status;
+                        
+                        // New, more robust check for 'about_me' field
+                        const aboutMe = data.data.kv?.about_me || data.data.about_me || (data.data.activities.find(act => act.type === 4) || {}).state || '';
+
+                        // Update user info
+                        usernameEl.textContent = user.global_name || user.username;
+                        discriminatorEl.textContent = `@${user.username}`;
+                        avatarEl.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+                        
+                        // Update status
+                        statusEl.classList.remove('status-online', 'status-idle', 'status-dnd', 'status-offline');
+                        statusIconEl.className = 'fas'; // Reset icon class
+                        if (status === 'online') {
+                            statusEl.classList.add('status-online');
+                            statusIconEl.classList.add('fa-circle');
+                        } else if (status === 'idle') {
+                            statusEl.classList.add('status-idle');
+                            statusIconEl.classList.add('fa-moon');
+                        } else if (status === 'dnd') {
+                            statusEl.classList.add('status-dnd');
+                            statusIconEl.classList.add('fa-minus-circle');
+                        } else {
+                            statusEl.classList.add('status-offline');
+                            statusIconEl.classList.add('fa-circle');
+                        }
+
+                        // Update about me section
+                        if (aboutMe && aboutMe.trim().length > 0) {
+                            aboutMeEl.textContent = aboutMe;
+                        } else {
+                            aboutMeEl.textContent = "";
+                        }
+
+                        // Update activities
+                        activitiesContainerEl.innerHTML = '';
+                        activitiesSection.style.display = 'block';
+                        
+                        // Clear previous timer if it exists
+                        if (timerInterval) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                        }
+
+                        if (activities.length > 0) {
+                            activities.forEach(activity => {
+                                // Filter out custom status
+                                if (activity.type === 4) return;
+                                
+                                const activityCard = document.createElement('div');
+                                activityCard.className = 'activity-card';
+
+                                let iconUrl = '';
+                                if (activity.assets && activity.assets.large_image) {
+                                    iconUrl = activity.assets.large_image.startsWith('spotify:') 
+                                        ? `https://i.scdn.co/image/${activity.assets.large_image.substring(8)}`
+                                        : `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
+                                } else {
+                                     // Fallback or default icon
+                                    iconUrl = `https://cdn.discordapp.com/embed/avatars/${user.id % 5}.png`;
+                                }
+
+                                activityCard.innerHTML = `
+                                    <div class="activity-icon-container">
+                                        <img class="activity-icon" src="${iconUrl}" alt="Activity Icon">
+                                    </div>
+                                    <div class="activity-details">
+                                        <div class="activity-state">${activity.state || 'N/A'}</div>
+                                        <div class="activity-name">${activity.name}</div>
+                                        <div class="small">${activity.details || 'N/A'}</div>
+                                    </div>
+                                `;
+
+                                // Add Spotify progress bar if applicable
+                                if (activity.name === 'Spotify' && activity.timestamps) {
+                                    const startTime = activity.timestamps.start;
+                                    const endTime = activity.timestamps.end;
+                                    
+                                    const progressBarContainer = document.createElement('div');
+                                    progressBarContainer.className = 'spotify-progress-bar-container';
+                                    const progressBar = document.createElement('div');
+                                    progressBar.className = 'spotify-progress-bar';
+                                    progressBarContainer.appendChild(progressBar);
+
+                                    const timestampsEl = document.createElement('div');
+                                    timestampsEl.className = 'spotify-timestamps';
+                                    const elapsedText = document.createElement('span');
+                                    const remainingText = document.createElement('span');
+                                    timestampsEl.appendChild(elapsedText);
+                                    timestampsEl.appendChild(remainingText);
+
+                                    activityCard.querySelector('.activity-details').appendChild(progressBarContainer);
+                                    activityCard.querySelector('.activity-details').appendChild(timestampsEl);
+
+                                    // Initial call and set up interval for the timer
+                                    updateSpotifyTimers(startTime, endTime, progressBar, elapsedText, remainingText);
+                                    timerInterval = setInterval(() => {
+                                        updateSpotifyTimers(startTime, endTime, progressBar, elapsedText, remainingText);
+                                    }, 1000);
+                                }
+
+                                activitiesContainerEl.appendChild(activityCard);
+                            });
+                        } else {
+                            const noActivities = document.createElement('div');
+                            noActivities.className = 'about-me-content';
+                            noActivities.textContent = "Not currently doing any public activities.";
+                            activitiesContainerEl.appendChild(noActivities);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch Discord data:", error);
+                    // Hide widget or show an error message
+                    activitiesSection.style.display = 'none';
+                    aboutMeSection.style.display = 'none';
+                } finally {
+                    loaderOverlay.style.display = 'none';
+                    widgetContent.style.display = 'block';
+                    widgetContainer.classList.add('visible');
+                }
+            };
+
+            // Initial fetch on page load
+            fetchDiscordData();
+
+            // Set up an interval to refresh the data automatically
+            setInterval(fetchDiscordData, 2000); // Refreshes every 2 seconds
+
+            // Set up Intersection Observer for fade-in effect
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            observer.observe(widgetContainer);
+
+        });
+    </script>
+</body>
+
+</html>
