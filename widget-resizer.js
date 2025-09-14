@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = document.body;
         const height = body.scrollHeight;
         // Increase the width by a fixed amount, e.g., 50 pixels
-        const width = body.scrollWidth + 5000; 
+        const width = body.scrollWidth + 300; 
 
         window.parent.postMessage({
             type: 'resize-widget',
