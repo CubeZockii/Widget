@@ -14,6 +14,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Audiowide&family=Roboto+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    
     <style>
         /* --- THEME VARIABLES (from theme.css) --- */
         :root {
@@ -114,7 +116,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            /* Fallback gradient */
             background: linear-gradient(135deg, #6a44aa, #4a74a1);
+            /* Added transition for smooth color changes */
+            transition: background 0.5s ease-in-out;
         }
 
         .avatar-container {
@@ -314,32 +319,27 @@
         </div>
         
         <div id="widget-content" style="display: none;">
-            <!-- Header Section -->
             <div class="widget-header">
                 <div class="banner" id="widget-banner"></div>
                 <div class="avatar-container">
-                    <img id="widget-avatar" class="avatar" alt="User Avatar" />
+                    <img id="widget-avatar" class="avatar" alt="User Avatar" crossorigin="anonymous" />
                     <div id="widget-status" class="status-badge">
                         <i id="status-icon" class="fas"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="widget-content">
-                <!-- User Info -->
                 <div class="user-info">
                     <h2 id="widget-username"></h2>
                     <p id="widget-discriminator" class="username"></p>
                 </div>
 
-                <!-- About Me -->
                 <div id="about-me-section">
                     <h3 class="section-header">About Me</h3>
                     <div id="widget-about-me" class="about-me-content"></div>
                 </div>
 
-                <!-- Activities -->
                 <div id="activities-section">
                     <h3 class="section-header">Active Now</h3>
                     <div id="activities-container" class="activities-container"></div>
@@ -351,6 +351,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const userId = "804361392344793119"; // <<< IMPORTANT: REPLACE THIS WITH YOUR USER ID
+
+            // 3. INITIALIZE COLOR THIEF
+            const colorThief = new ColorThief();
 
             const widgetContainer = document.getElementById('discord-widget-container');
             const loaderOverlay = document.getElementById('loader-overlay');
@@ -396,6 +399,33 @@
                 elapsedText.textContent = formatTime(elapsed);
                 remainingText.textContent = `-${formatTime(remaining > 0 ? remaining : 0)}`;
             };
+            
+            // --- 4. NEW FUNCTION TO UPDATE BANNER COLOR ---
+            const updateBannerColor = () => {
+                // Ensure the image is fully loaded before trying to get colors
+                if (avatarEl.complete) {
+                    try {
+                        // Get a palette of 2 colors from the avatar
+                        const palette = colorThief.getPalette(avatarEl, 2);
+                        if (palette && palette.length >= 2) {
+                            const color1 = `rgb(${palette[0].join(',')})`;
+                            const color2 = `rgb(${palette[1].join(',')})`;
+                            bannerEl.style.background = `linear-gradient(135deg, ${color1}, ${color2})`;
+                        }
+                    } catch (e) {
+                        console.error("Error getting colors from avatar:", e);
+                        // Fallback to default if there's an error
+                        bannerEl.style.background = 'linear-gradient(135deg, #6a44aa, #4a74a1)';
+                    }
+                }
+            };
+            
+            // Add event listeners to the avatar image
+            avatarEl.addEventListener('load', updateBannerColor);
+            avatarEl.addEventListener('error', () => {
+                console.error("Failed to load avatar image.");
+                bannerEl.style.background = 'linear-gradient(135deg, #6a44aa, #4a74a1)';
+            });
 
             // Main function to fetch and render Discord data
             const fetchDiscordData = async () => {
@@ -414,7 +444,13 @@
                         // Update user info
                         usernameEl.textContent = user.global_name || user.username;
                         discriminatorEl.textContent = `@${user.username}`;
-                        avatarEl.src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+
+                        // --- 5. UPDATE AVATAR SRC AND TRIGGER COLOR CHANGE ---
+                        // Only update src if it has changed to avoid unnecessary reloads/flickering
+                        const newAvatarSrc = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
+                        if (avatarEl.src !== newAvatarSrc) {
+                            avatarEl.src = newAvatarSrc;
+                        }
                         
                         // Update status
                         statusEl.classList.remove('status-online', 'status-idle', 'status-dnd', 'status-offline');
@@ -464,7 +500,7 @@
                                         ? `https://i.scdn.co/image/${activity.assets.large_image.substring(8)}`
                                         : `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
                                 } else {
-                                     // Fallback or default icon
+                                        // Fallback or default icon
                                     iconUrl = `https://cdn.discordapp.com/embed/avatars/${user.id % 5}.png`;
                                 }
 
