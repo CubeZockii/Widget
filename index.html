@@ -246,15 +246,23 @@
             flex-direction: column;
             flex-grow: 1;
         }
-        .activity-state, .activity-details .small {
-            color: var(--text-secondary-dark);
-            font-size: 0.8rem;
-        }
         .activity-name {
+            font-size: 1rem; /* Adjust font size to make it prominent */
             font-weight: bold;
             color: var(--text-headings-dark);
         }
-        .activity-state, .activity-details .small {
+        .activity-details .small {
+            color: var(--text-secondary-dark);
+            font-size: 0.8rem;
+            margin-top: 2px; /* Small space between lines */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .activity-state {
+            font-size: 0.8rem;
+            color: var(--text-secondary-dark);
+            margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -351,6 +359,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const userId = "804361392344793119"; // <<< IMPORTANT: REPLACE THIS WITH YOUR USER ID
+            const fallbackIconUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
 
             // 3. INITIALIZE COLOR THIEF
             const colorThief = new ColorThief();
@@ -500,21 +509,23 @@
                                         ? `https://i.scdn.co/image/${activity.assets.large_image.substring(8)}`
                                         : `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
                                 } else {
-                                        // Fallback or default icon
-                                    iconUrl = `https://cdn.discordapp.com/embed/avatars/${user.id % 5}.png`;
+                                    iconUrl = fallbackIconUrl;
                                 }
 
+                                const detailsLine = activity.details && activity.state ? activity.details : '';
+                                const stateLine = activity.state || '';
+                                
                                 activityCard.innerHTML = `
                                     <div class="activity-icon-container">
                                         <img class="activity-icon" src="${iconUrl}" alt="Activity Icon">
                                     </div>
                                     <div class="activity-details">
-                                        <div class="activity-state">${activity.state || 'N/A'}</div>
-                                        <div class="activity-name">${activity.name}</div>
-                                        <div class="small">${activity.details || 'N/A'}</div>
+                                        <div class="activity-name">${activity.name || 'N/A'}</div>
+                                        <div class="small">${detailsLine || 'N/A'}</div>
+                                        <div class="activity-state">${stateLine || ''}</div>
                                     </div>
                                 `;
-
+                                
                                 // Add Spotify progress bar if applicable
                                 if (activity.name === 'Spotify' && activity.timestamps) {
                                     const startTime = activity.timestamps.start;
