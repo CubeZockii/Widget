@@ -7,72 +7,55 @@
     <meta name="author" content="CubeZockii">
     <meta name="description"
         content="A dynamic Discord profile widget displaying live user information, including activities and 'About Me' section.">
-
     <title>Discord Profile Widget</title>
-
-    <link rel="icon" href="https://assets-global.website-files.com/6257adef93867e50d84d30e2/6257d23c14d18d1723f03b92_Discord-Icon-p-500.png" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&family=Audiowide&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="icon"
+        href="https://assets-global.website-files.com/6257adef93867e50d84d30e2/6257d23c14d18d1723f03b92_Discord-Icon-p-500.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
-    
+
     <style>
-        /* --- THEME VARIABLES (from theme.css) --- */
+        /* --- Dark Glass Theme Variables --- */
         :root {
-            --bg-primary-dark: #0A0F1A;
-            --bg-secondary-dark: #121826;
-            --bg-tertiary-dark: #1F2937;
-            --bg-card-dark: #161E2D;
-            --bg-loader-dark: #070B12;
-            --bg-sidebar-dark: rgba(18, 24, 38, 0.95);
-            --bg-overlay-dark: rgba(0, 0, 0, 0.7);
+            --bg-body-dark: #161a21;
+            /* A deep purple-ish dark */
+            --bg-card-glass: rgba(0, 0, 0, 0.4);
+            /* Dark, translucent glass */
+            --bg-card-hover: rgba(0, 0, 0, 0.6);
+            --text-light: #F0F0F0;
+            --text-muted: #BDBDBD;
+            --accent-pink: #141b25;
+            --accent-purple: #334158;
 
-            --text-primary-dark: #E5E7EB;
-            --text-secondary-dark: #9CA3AF;
-            --text-headings-dark: #F9FAFB;
-            --text-loader-dark: var(--accent-primary-dark);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --shadow-glass: rgba(0, 0, 0, 0.2);
+            --shadow-glow: rgba(138, 43, 226, 0.4);
 
-            --accent-primary-dark: #8B5CF6;
-            --accent-secondary-dark: #60A5FA;
-            --accent-glow-hero-start-dark: rgba(139, 92, 246, 0.6);
-            --accent-glow-hero-mid-dark: rgba(96, 165, 250, 0.4);
-            --accent-glow-hero-end-dark: rgba(10, 15, 26, 0);
-            --accent-glow-skill-card-dark: rgba(139, 92, 246, 0.5);
-            --accent-glow-project-card-dark: rgba(96, 165, 250, 0.3);
-
-            --border-color-dark: #374151;
-            --shadow-color-dark: rgba(0, 0, 0, 0.6);
-            --icon-color-dark: var(--text-primary-dark);
-
-            --font-primary: 'Orbitron', 'Audiowide', sans-serif;
-            --font-secondary: 'Share Tech Mono', 'Roboto Mono', monospace;
             --font-mono: 'Roboto Mono', monospace;
-            --font-loader: 'Audiowide', 'Orbitron', sans-serif;
 
-            --transition-speed-fast: 0.15s;
-            --transition-speed-normal: 0.25s;
-            --transition-speed-medium: 0.4s;
-            --transition-speed-slow: 0.6s;
-            --transition-timing: ease-in-out;
-            --transition-timing-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
-
-            --spacing-unit: 8px;
-            --header-height: 70px;
-            --max-width-container: 1200px;
-            --border-radius-small: 4px;
-            --border-radius-medium: 8px;
-            --border-radius-large: 12px;
-            --border-radius-card: 10px;
-            --border-radius-button: 8px;
+            --transition-speed: 0.3s;
+            --border-radius-large: 16px;
+            --border-radius-medium: 10px;
+            --border-radius-small: 8px;
+            --spacing-unit: 16px;
         }
 
-        /* --- KEYFRAME ANIMATIONS (from animations.css) --- */
-        @keyframes fade-in {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* --- Animations --- */
+        @keyframes pulse-online {
+            0% {
+                box-shadow: 0 0 0 0 rgba(138, 43, 226, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(138, 43, 226, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(138, 43, 226, 0);
+            }
         }
 
-        /* --- BASE & UTILITY STYLES (from style.css) --- */
+        /* --- Base Styles --- */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -80,26 +63,26 @@
         }
 
         body {
-            background-color: transparent;
-            font-family: var(--font-secondary);
+            background-color: var(--bg-body-dark);
+            font-family: var(--font-mono);
+            color: var(--text-light);
+            background-image: radial-gradient(circle, #161a21, #212b3a);
         }
 
-        h1, h2, h3, h4, h5 {
-            font-family: var(--font-primary);
-            font-weight: 700;
-        }
-
-        /* --- DISCORD WIDGET STYLES (custom) --- */
+        /* --- Widget Container --- */
         #discord-widget-container {
             width: 100%;
             max-width: 400px;
-            background-color: var(--bg-card-dark);
+            background-color: var(--bg-card-glass);
             border-radius: var(--border-radius-large);
-            box-shadow: 0 10px 30px var(--shadow-color-dark);
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 10px 30px var(--shadow-glass);
             overflow: hidden;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             opacity: 0;
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
             transform: translateY(20px);
+            transition: opacity var(--transition-speed) ease-out, transform var(--transition-speed) ease-out;
         }
 
         #discord-widget-container.visible {
@@ -107,33 +90,32 @@
             transform: translateY(0);
         }
 
+        /* --- Header --- */
         .widget-header {
             position: relative;
             height: 90px;
         }
-        
+
         .banner {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Fallback gradient */
-            background: linear-gradient(135deg, #6a44aa, #4a74a1);
-            /* Added transition for smooth color changes */
-            transition: background 0.5s ease-in-out;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            transition: background var(--transition-speed) ease-in-out;
         }
 
         .avatar-container {
             position: absolute;
             bottom: -32px;
-            left: 16px;
+            left: var(--spacing-unit);
             width: 96px;
             height: 96px;
             border-radius: 50%;
-            background-color: var(--bg-card-dark);
-            border: 6px solid var(--bg-card-dark);
+            border: 4px solid var(--bg-body-dark);
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 1;
         }
 
         .avatar {
@@ -141,69 +123,82 @@
             height: 84px;
             border-radius: 50%;
             object-fit: cover;
-            position: relative;
         }
 
         .status-badge {
             position: absolute;
-            bottom: -2px;
-            right: -2px;
-            width: 32px;
-            height: 32px;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            border: 6px solid var(--bg-card-dark);
-            background-color: var(--bg-card-dark); /* Fallback */
+            border: 4px solid var(--bg-body-dark);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 2;
         }
-        .status-badge i {
-            font-size: 16px;
-            color: #fff;
-        }
-        .status-online { background-color: #3ba55c; }
-        .status-idle { background-color: #faa81a; }
-        .status-dnd { background-color: #ed4245; }
-        .status-offline { background-color: #747f8d; }
 
+        .status-badge i {
+            color: var(--text-light);
+            font-size: 10px;
+        }
+
+        .status-online {
+            background-color: var(--accent-purple);
+            animation: pulse-online 2s infinite;
+        }
+
+        .status-idle {
+            background-color: #FFD700;
+        }
+
+        .status-dnd {
+            background-color: #FF0000;
+        }
+
+        .status-offline {
+            background-color: #555555;
+        }
+
+        /* --- Content --- */
         .widget-content {
-            padding: 40px 16px 16px;
+            padding: calc(var(--spacing-unit) * 3) var(--spacing-unit) var(--spacing-unit);
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: var(--spacing-unit);
         }
 
         .user-info {
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color-dark);
+            padding-bottom: var(--spacing-unit);
+            border-bottom: 1px solid var(--border-glass);
         }
 
         .user-info h2 {
             font-size: 1.5rem;
-            font-family: var(--font-primary);
-            color: var(--text-headings-dark);
+            color: var(--text-light);
+            font-weight: 700;
         }
 
         .user-info .username {
             font-size: 1rem;
-            color: var(--text-secondary-dark);
+            color: var(--text-muted);
             margin-top: 4px;
         }
 
         .section-header {
-            font-size: 1rem;
-            color: var(--text-secondary-dark);
-            font-family: var(--font-primary);
-            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
         }
 
         .about-me-content {
             white-space: pre-wrap;
-            line-height: 1.5;
-            color: var(--text-primary-dark);
+            line-height: 1.6;
+            color: var(--text-light);
+            font-size: 0.95rem;
         }
 
         .activities-container {
@@ -212,29 +207,51 @@
             gap: 12px;
         }
 
+        /* --- Activity Card (Glass Effect) --- */
         .activity-card {
-            background-color: var(--bg-tertiary-dark);
+            background-color: var(--bg-card-glass);
             border-radius: var(--border-radius-medium);
             padding: 12px;
             display: flex;
             gap: 12px;
             align-items: center;
-            border: 1px solid var(--border-color-dark);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 4px 12px var(--shadow-glass);
+            transition: all var(--transition-speed);
         }
+
         .activity-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow-glass);
+            background-color: var(--bg-card-hover);
+            border: 1px solid transparent;
+            background-image: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
+            background-clip: padding-box;
+            border: solid 1px transparent;
+            position: relative;
+        }
+
+        .activity-card:hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: -1;
+            margin: -1px;
+            border-radius: inherit;
+            background-image: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
         }
 
         .activity-icon-container {
             width: 48px;
             height: 48px;
-            border-radius: 8px;
+            border-radius: var(--border-radius-small);
             overflow: hidden;
             flex-shrink: 0;
-            position: relative;
         }
+
         .activity-icon {
             width: 100%;
             height: 100%;
@@ -246,58 +263,27 @@
             flex-direction: column;
             flex-grow: 1;
         }
+
         .activity-name {
-            font-size: 1rem; /* Adjust font size to make it prominent */
+            font-size: 1rem;
             font-weight: bold;
-            color: var(--text-headings-dark);
+            color: var(--text-light);
         }
-        .activity-details .small {
-            color: var(--text-secondary-dark);
-            font-size: 0.8rem;
-            margin-top: 2px; /* Small space between lines */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+
+        .activity-details .small,
         .activity-state {
+            color: var(--text-muted);
             font-size: 0.8rem;
-            color: var(--text-secondary-dark);
             margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .loader-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
-            text-align: center;
-        }
-        .loader-container .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid var(--accent-primary-dark);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        .loader-container .loader-text {
-            margin-top: 16px;
-            color: var(--text-secondary-dark);
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Spotify progress bar specific styles */
         .spotify-progress-bar-container {
             width: 100%;
             height: 4px;
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--border-glass);
             border-radius: 2px;
             margin-top: 8px;
             overflow: hidden;
@@ -305,7 +291,7 @@
 
         .spotify-progress-bar {
             height: 100%;
-            background-color: rgb(255, 255, 255);
+            background-image: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
             transition: width 1s linear;
         }
 
@@ -313,7 +299,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.7rem;
-            color: var(--text-secondary-dark);
+            color: var(--text-muted);
             margin-top: 4px;
         }
     </style>
@@ -323,9 +309,9 @@
     <div id="discord-widget-container">
         <div id="loader-overlay" class="loader-container">
             <div class="spinner"></div>
-            <p class="loader-text">Loading Discord Profile...</p>
+            <p class="loader-text">Loading Profile...</p>
         </div>
-        
+
         <div id="widget-content" style="display: none;">
             <div class="widget-header">
                 <div class="banner" id="widget-banner"></div>
@@ -361,13 +347,10 @@
             const userId = "804361392344793119"; // <<< IMPORTANT: REPLACE THIS WITH YOUR USER ID
             const fallbackIconUrl = "https://cdn.discordapp.com/embed/avatars/0.png";
 
-            // 3. INITIALIZE COLOR THIEF
             const colorThief = new ColorThief();
-
             const widgetContainer = document.getElementById('discord-widget-container');
             const loaderOverlay = document.getElementById('loader-overlay');
             const widgetContent = document.getElementById('widget-content');
-
             const bannerEl = document.getElementById('widget-banner');
             const avatarEl = document.getElementById('widget-avatar');
             const usernameEl = document.getElementById('widget-username');
@@ -381,7 +364,6 @@
 
             let timerInterval = null;
 
-            // Helper function to format milliseconds to a readable time format (e.g., 0:35)
             const formatTime = (ms) => {
                 const totalSeconds = Math.floor(ms / 1000);
                 const minutes = Math.floor(totalSeconds / 60);
@@ -389,7 +371,6 @@
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
             };
 
-            // Function to update Spotify song progress bar and timestamps
             const updateSpotifyTimers = (startTime, endTime, progressBar, elapsedText, remainingText) => {
                 const now = new Date().getTime();
                 const totalDuration = endTime - startTime;
@@ -400,7 +381,7 @@
                     progressBar.style.width = '100%';
                     elapsedText.textContent = formatTime(totalDuration);
                     remainingText.textContent = formatTime(0);
-                    return; // Stop timer when song ends
+                    return;
                 }
 
                 const progressPercentage = (elapsed / totalDuration) * 100;
@@ -408,13 +389,10 @@
                 elapsedText.textContent = formatTime(elapsed);
                 remainingText.textContent = `-${formatTime(remaining > 0 ? remaining : 0)}`;
             };
-            
-            // --- 4. NEW FUNCTION TO UPDATE BANNER COLOR ---
+
             const updateBannerColor = () => {
-                // Ensure the image is fully loaded before trying to get colors
                 if (avatarEl.complete) {
                     try {
-                        // Get a palette of 2 colors from the avatar
                         const palette = colorThief.getPalette(avatarEl, 2);
                         if (palette && palette.length >= 2) {
                             const color1 = `rgb(${palette[0].join(',')})`;
@@ -423,20 +401,18 @@
                         }
                     } catch (e) {
                         console.error("Error getting colors from avatar:", e);
-                        // Fallback to default if there's an error
-                        bannerEl.style.background = 'linear-gradient(135deg, #6a44aa, #4a74a1)';
+                        bannerEl.style.background = 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))';
                     }
                 }
             };
-            
-            // Add event listeners to the avatar image
+
             avatarEl.addEventListener('load', updateBannerColor);
             avatarEl.addEventListener('error', () => {
                 console.error("Failed to load avatar image.");
-                bannerEl.style.background = 'linear-gradient(135deg, #6a44aa, #4a74a1)';
+                bannerEl.style.background = 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))';
             });
 
-            // Main function to fetch and render Discord data
+
             const fetchDiscordData = async () => {
                 try {
                     const response = await fetch(`https://api.lanyard.rest/v1/users/${userId}`);
@@ -446,24 +422,17 @@
                         const user = data.data.discord_user;
                         const activities = data.data.activities;
                         const status = data.data.discord_status;
-                        
-                        // New, more robust check for 'about_me' field
                         const aboutMe = data.data.kv?.about_me || data.data.about_me || (data.data.activities.find(act => act.type === 4) || {}).state || '';
 
-                        // Update user info
                         usernameEl.textContent = user.global_name || user.username;
                         discriminatorEl.textContent = `@${user.username}`;
-
-                        // --- 5. UPDATE AVATAR SRC AND TRIGGER COLOR CHANGE ---
-                        // Only update src if it has changed to avoid unnecessary reloads/flickering
                         const newAvatarSrc = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=256`;
                         if (avatarEl.src !== newAvatarSrc) {
                             avatarEl.src = newAvatarSrc;
                         }
-                        
-                        // Update status
+
                         statusEl.classList.remove('status-online', 'status-idle', 'status-dnd', 'status-offline');
-                        statusIconEl.className = 'fas'; // Reset icon class
+                        statusIconEl.className = 'fas';
                         if (status === 'online') {
                             statusEl.classList.add('status-online');
                             statusIconEl.classList.add('fa-circle');
@@ -472,24 +441,24 @@
                             statusIconEl.classList.add('fa-moon');
                         } else if (status === 'dnd') {
                             statusEl.classList.add('status-dnd');
-                            statusIconEl.classList.add('fa-minus-circle');
+                            statusIconEl.classList.add('fa-minus');
                         } else {
                             statusEl.classList.add('status-offline');
                             statusIconEl.classList.add('fa-circle');
                         }
 
-                        // Update about me section
                         if (aboutMe && aboutMe.trim().length > 0) {
                             aboutMeEl.textContent = aboutMe;
+                            aboutMeSection.style.display = 'block';
                         } else {
                             aboutMeEl.textContent = "";
+                            aboutMeSection.style.display = 'none';
                         }
 
-                        // Update activities
                         activitiesContainerEl.innerHTML = '';
                         activitiesSection.style.display = 'block';
-                        
-                        // Clear previous timer if it exists
+
+
                         if (timerInterval) {
                             clearInterval(timerInterval);
                             timerInterval = null;
@@ -497,24 +466,21 @@
 
                         if (activities.length > 0) {
                             activities.forEach(activity => {
-                                // Filter out custom status
                                 if (activity.type === 4) return;
-                                
                                 const activityCard = document.createElement('div');
                                 activityCard.className = 'activity-card';
-
                                 let iconUrl = '';
                                 if (activity.assets && activity.assets.large_image) {
-                                    iconUrl = activity.assets.large_image.startsWith('spotify:') 
-                                        ? `https://i.scdn.co/image/${activity.assets.large_image.substring(8)}`
-                                        : `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
+                                    iconUrl = activity.assets.large_image.startsWith('spotify:') ?
+                                        `https://i.scdn.co/image/${activity.assets.large_image.substring(8)}` :
+                                        `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
                                 } else {
                                     iconUrl = fallbackIconUrl;
                                 }
 
                                 const detailsLine = activity.details && activity.state ? activity.details : '';
                                 const stateLine = activity.state || '';
-                                
+
                                 activityCard.innerHTML = `
                                     <div class="activity-icon-container">
                                         <img class="activity-icon" src="${iconUrl}" alt="Activity Icon">
@@ -525,12 +491,10 @@
                                         <div class="activity-state">${stateLine || ''}</div>
                                     </div>
                                 `;
-                                
-                                // Add Spotify progress bar if applicable
+
                                 if (activity.name === 'Spotify' && activity.timestamps) {
                                     const startTime = activity.timestamps.start;
                                     const endTime = activity.timestamps.end;
-                                    
                                     const progressBarContainer = document.createElement('div');
                                     progressBarContainer.className = 'spotify-progress-bar-container';
                                     const progressBar = document.createElement('div');
@@ -547,13 +511,11 @@
                                     activityCard.querySelector('.activity-details').appendChild(progressBarContainer);
                                     activityCard.querySelector('.activity-details').appendChild(timestampsEl);
 
-                                    // Initial call and set up interval for the timer
                                     updateSpotifyTimers(startTime, endTime, progressBar, elapsedText, remainingText);
                                     timerInterval = setInterval(() => {
                                         updateSpotifyTimers(startTime, endTime, progressBar, elapsedText, remainingText);
                                     }, 1000);
                                 }
-
                                 activitiesContainerEl.appendChild(activityCard);
                             });
                         } else {
@@ -565,7 +527,6 @@
                     }
                 } catch (error) {
                     console.error("Failed to fetch Discord data:", error);
-                    // Hide widget or show an error message
                     activitiesSection.style.display = 'none';
                     aboutMeSection.style.display = 'none';
                 } finally {
@@ -575,13 +536,9 @@
                 }
             };
 
-            // Initial fetch on page load
             fetchDiscordData();
+            setInterval(fetchDiscordData, 2000);
 
-            // Set up an interval to refresh the data automatically
-            setInterval(fetchDiscordData, 2000); // Refreshes every 2 seconds
-
-            // Set up Intersection Observer for fade-in effect
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -589,10 +546,10 @@
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.1 });
-
+            }, {
+                threshold: 0.1
+            });
             observer.observe(widgetContainer);
-
         });
     </script>
 </body>
