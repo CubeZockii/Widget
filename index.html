@@ -24,8 +24,10 @@
             --bg-card-hover: rgba(0, 0, 0, 0.6);
             --text-light: #F0F0F0;
             --text-muted: #BDBDBD;
-            --accent-pink: #141b25;
-            --accent-purple: #334158;
+            --accent-blue: #141b25;
+            --accent-light-blue: #334158;
+            --accent-blue-spotify: #141b25;
+            --accent-light-blue-spotify: #334158;
 
             --border-glass: rgba(255, 255, 255, 0.1);
             --shadow-glass: rgba(0, 0, 0, 0.2);
@@ -100,7 +102,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            background: linear-gradient(135deg, var(--accent-light-blue), var(--accent-blue));
             transition: background var(--transition-speed) ease-in-out;
         }
 
@@ -145,7 +147,7 @@
         }
 
         .status-online {
-            background-color: var(--accent-purple);
+            background-color: var(--accent-light-blue);
             animation: pulse-online 2s infinite;
         }
 
@@ -225,7 +227,7 @@
             box-shadow: 0 8px 20px var(--shadow-glass);
             background-color: var(--bg-card-hover);
             border: 1px solid transparent;
-            background-image: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-light-blue));
             background-clip: padding-box;
             border: solid 1px transparent;
             position: relative;
@@ -241,7 +243,7 @@
             z-index: -1;
             margin: -1px;
             border-radius: inherit;
-            background-image: linear-gradient(to right, var(--accent-pink), var(--accent-purple));
+            background-image: linear-gradient(to right, var(--accent-blue), var(--accent-light-blue));
         }
 
         .activity-icon-container {
@@ -291,7 +293,7 @@
 
         .spotify-progress-bar {
             height: 100%;
-            background: #FFFFFF;
+            background-image: linear-gradient(to right, var(--accent-blue-spotify), var(--accent-light-blue-spotify));
             transition: width 1s linear;
         }
 
@@ -401,7 +403,7 @@
                         }
                     } catch (e) {
                         console.error("Error getting colors from avatar:", e);
-                        bannerEl.style.background = 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))';
+                        bannerEl.style.background = 'linear-gradient(135deg, var(--accent-light-blue), var(--accent-blue)';
                     }
                 }
             };
@@ -409,7 +411,7 @@
             avatarEl.addEventListener('load', updateBannerColor);
             avatarEl.addEventListener('error', () => {
                 console.error("Failed to load avatar image.");
-                bannerEl.style.background = 'linear-gradient(135deg, var(--accent-purple), var(--accent-pink))';
+                bannerEl.style.background = 'linear-gradient(135deg, var(--accent-light-blue), var(--accent-blue))';
             });
 
 
